@@ -12,13 +12,15 @@ export async function GET(request: NextRequest) {
     const tx = searchParams.get('tx') || '0';
     const gas = searchParams.get('gas') || '0';
     const contracts = searchParams.get('contracts') || '0'; 
-    const _t = searchParams.get('t'); 
-
+    
     // Basename Logic
     let displayName = rawName.trim();
     if (!displayName.toLowerCase().endsWith('.base.eth') && !displayName.startsWith('0x')) {
       displayName += '.base.eth';
     }
+
+    // First Letter Logic (No external fetch)
+    const firstLetter = displayName.charAt(0).toUpperCase();
 
     return new ImageResponse(
       (
@@ -46,19 +48,6 @@ export async function GET(request: NextRequest) {
               background: 'rgba(255, 255, 255, 0.1)',
               borderRadius: '50%',
               filter: 'blur(80px)',
-              display: 'flex',
-            }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '-50px',
-              left: '-50px',
-              width: '300px',
-              height: '300px',
-              background: 'rgba(0, 0, 0, 0.2)',
-              borderRadius: '50%',
-              filter: 'blur(60px)',
               display: 'flex',
             }}
           />
@@ -93,8 +82,7 @@ export async function GET(request: NextRequest) {
                 fontWeight: 'bold',
                 overflow: 'hidden'
               }}>
-                {/* CHANGED: Display First Letter Only (No Image) */}
-                {displayName[0].toUpperCase()}
+                {firstLetter}
               </div>
               <span style={{ fontSize: 48, fontWeight: 900, color: '#111' }}>
                 {displayName}
@@ -127,7 +115,7 @@ export async function GET(request: NextRequest) {
               </div>
             </div>
 
-            {/* Footer Text */}
+            {/* Footer */}
             <div style={{ marginTop: 30, fontSize: 20, color: '#999', fontStyle: 'italic' }}>
               + swaps, bridges, and much more...
             </div>
@@ -140,7 +128,6 @@ export async function GET(request: NextRequest) {
       },
     );
   } catch (e: any) {
-    console.error("OG Generation Error:", e);
     return new Response(`Failed to generate the image`, {
       status: 500,
     });

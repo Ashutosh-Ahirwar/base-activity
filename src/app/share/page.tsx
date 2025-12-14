@@ -15,7 +15,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const contracts = (sp.contracts as string) || '0';
   const t = (sp.t as string) || Date.now().toString();
 
-  // DYNAMIC HOST RESOLUTION
+  // 1. HOST RESOLUTION (Force HTTPS)
   let rawHost = process.env.NEXT_PUBLIC_HOST 
     ? process.env.NEXT_PUBLIC_HOST 
     : process.env.VERCEL_URL 
@@ -23,15 +23,30 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       : 'http://localhost:3000';
 
   let host = rawHost.toString();
-  
-  // FIX: Force HTTPS and remove trailing slash
   if (!host.startsWith('http')) {
     host = `https://${host}`;
   }
   host = host.replace(/\/$/, '');
 
+  // 2. CONSTRUCT URLS
   const imageUrl = `${host}/api/og?name=${encodeURIComponent(name)}&tx=${encodeURIComponent(tx)}&gas=${encodeURIComponent(gas)}&contracts=${encodeURIComponent(contracts)}&t=${t}`;
-  const targetUrl = `${host}?basename=${encodeURIComponent(name)}`;
+  const appUrl = host; // The root URL of your app
+
+  // 3. CREATE FRAME METADATA (JSON Format - Frames v2)
+  const frameMetadata = JSON.stringify({
+    version: "next",
+    imageUrl: imageUrl,
+    button: {
+      title: "Open Mini App",
+      action: {
+        type: "launch_frame",
+        name: "Base Activity",
+        url: appUrl,
+        splashImageUrl: `${host}/splash.png`,
+        splashBackgroundColor: "#0052FF" // Matches your blue theme
+      }
+    }
+  });
 
   return {
     title: `${name}'s Base Stats`,
@@ -39,23 +54,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     openGraph: {
       title: `${name}'s Base Stats`,
       description: `Check out ${name}'s onchain activity on Base!`,
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: `${name}'s Base Stats`,
-        }
-      ],
+      images: [imageUrl],
     },
     other: {
-      "fc:frame": "vNext",
-      "fc:frame:image": imageUrl,
-      "fc:frame:image:aspect_ratio": "1.91:1",
-      // Button to open the Mini App
-      "fc:frame:button:1": "Open Mini App",
-      "fc:frame:button:1:action": "link",
-      "fc:frame:button:1:target": targetUrl, 
+      "fc:frame": frameMetadata
     }
   };
 }
