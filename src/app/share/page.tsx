@@ -22,7 +22,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       : 'http://localhost:3000';
 
   // 2. ENCODING PARAMETERS
-  // Important to encode values to prevent URL breakage with special chars
+  // Important to encode values (like names with spaces or emojis) to prevent URL breakage
   const imageUrl = `${host}/api/og?name=${encodeURIComponent(name)}&tx=${encodeURIComponent(tx)}&gas=${encodeURIComponent(gas)}&streak=${encodeURIComponent(streak)}`;
 
   return {
