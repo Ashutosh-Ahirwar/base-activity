@@ -49,7 +49,8 @@ function getUtcMidnight(timestampMs: number): number {
 }
 
 // ROBUST FETCH: Throws error if data cannot be retrieved after all retries
-async function fetchWithRetry(url: string, retries = 5, initialDelay = 1000): Promise<any> {
+// UPDATED: Now retries 8 times
+async function fetchWithRetry(url: string, retries = 8, initialDelay = 1000): Promise<any> {
   for (let i = 0; i < retries; i++) {
     try {
       // CACHE DISABLED as requested
