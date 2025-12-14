@@ -67,7 +67,8 @@ export default function Home() {
     shareUrl.searchParams.set('name', input);
     shareUrl.searchParams.set('tx', stats.totalTransactions.toString());
     shareUrl.searchParams.set('gas', stats.totalGasPaid);
-    shareUrl.searchParams.set('streak', stats.longestStreak.toString());
+    // Send 'contracts' param instead of 'streak'
+    shareUrl.searchParams.set('contracts', stats.contractsDeployed.toString());
     shareUrl.searchParams.set('t', timestamp.toString()); // Pass 't' param to force fresh image
 
     try {
