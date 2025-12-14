@@ -37,7 +37,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     version: "next",
     imageUrl: imageUrl,
     button: {
-      title: "Open Mini App",
+      title: "Check Stats",
       action: {
         type: "launch_frame",
         name: "Base Activity",

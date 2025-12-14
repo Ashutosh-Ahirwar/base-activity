@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       displayName += '.base.eth';
     }
 
-    // First Letter Logic (No external fetch)
+    // First Letter Logic
     const firstLetter = displayName.charAt(0).toUpperCase();
 
     return new ImageResponse(
@@ -59,10 +59,13 @@ export async function GET(request: NextRequest) {
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: 'white',
+              // FIX: Added border to define edges clearly
+              border: '4px solid rgba(0, 0, 0, 0.05)', 
               borderRadius: 24,
               padding: '40px 60px',
               boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
-              width: '85%',
+              // FIX: Reduced width to prevent touching edges
+              width: '80%', 
               zIndex: 10,
             }}
           >
