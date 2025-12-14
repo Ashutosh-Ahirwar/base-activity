@@ -2,7 +2,8 @@
 
 import { createPublicClient, http, formatEther } from 'viem';
 import { mainnet } from 'viem/chains';
-import { differenceInDays, fromUnixTime, subDays, startOfDay } from 'date-fns';
+
+// Removed date-fns to ensure strict UTC handling without local timezone interference
 
 const publicClient = createPublicClient({
   chain: mainnet, 
@@ -39,6 +40,13 @@ export interface UserStats {
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Helper: Normalize timestamp to absolute UTC Midnight (00:00:00 UTC)
+// This is critical for consistent streaks across all timezones.
+function getUtcMidnight(timestampMs: number): number {
+  const date = new Date(timestampMs);
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+}
 
 // ROBUST FETCH: Throws error if data cannot be retrieved after all retries
 async function fetchWithRetry(url: string, retries = 5, initialDelay = 1000): Promise<any> {
@@ -91,17 +99,12 @@ export async function getAddressFromBasename(input: string): Promise<string | nu
   let name = input.trim().toLowerCase();
 
   // 1. REJECT STRICT RAW ADDRESSES
-  // A raw address is 0x followed by exactly 40 hex characters.
-  // We reject this to enforce "Basename only" input.
-  // Note: Basenames starting with 0x (like 0xjohn.base.eth) will PASS this check 
-  // because they are longer or contain non-hex characters (dots).
   const isRawAddress = /^0x[a-f0-9]{40}$/.test(name);
   if (isRawAddress) {
     return null; 
   }
   
   // 2. Handle Basename logic
-  // If it doesn't have a dot (e.g. "jesse"), append .base.eth
   if (!name.includes('.')) {
     name += '.base.eth';
   }
@@ -151,20 +154,29 @@ export async function fetchUserStats(address: string): Promise<UserStats> {
 
   const successTxs = allMainnetTxs.filter(tx => tx.isError === "0");
 
+  // --- UPDATED DATE LOGIC (UTC) ---
+  // Convert all timestamps to UTC Midnight milliseconds
   const txDates = successTxs
-    .map(tx => startOfDay(fromUnixTime(parseInt(tx.timeStamp))).getTime())
+    .map(tx => getUtcMidnight(parseInt(tx.timeStamp) * 1000))
     .sort((a, b) => a - b);
+    
   const uniqueDates = Array.from(new Set(txDates));
   
   let longestStreak = 0;
   let currentStreak = 0;
   let tempStreak = 0;
+  
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
   for (let i = 0; i < uniqueDates.length; i++) {
     if (i === 0) { tempStreak = 1; continue; }
     const prev = uniqueDates[i - 1];
     const curr = uniqueDates[i];
-    if (differenceInDays(curr, prev) === 1) {
+    
+    // Calculate difference in exact days (rounding handles leap seconds/minor adjustments)
+    const diff = Math.round((curr - prev) / ONE_DAY_MS);
+
+    if (diff === 1) {
       tempStreak++;
     } else {
       longestStreak = Math.max(longestStreak, tempStreak);
@@ -173,18 +185,20 @@ export async function fetchUserStats(address: string): Promise<UserStats> {
   }
   longestStreak = Math.max(longestStreak, tempStreak);
 
+  // UTC-Safe "Today" and "Yesterday"
   const lastActive = uniqueDates[uniqueDates.length - 1];
-  const today = startOfDay(new Date()).getTime();
-  const yesterday = startOfDay(subDays(new Date(), 1)).getTime();
+  const todayUtc = getUtcMidnight(Date.now());
+  const yesterdayUtc = todayUtc - ONE_DAY_MS;
 
-  if (lastActive === today || lastActive === yesterday) {
+  // Check if active today OR yesterday in UTC
+  if (lastActive === todayUtc || lastActive === yesterdayUtc) {
     currentStreak = tempStreak;
   } else {
     currentStreak = 0;
   }
 
   const firstTx = uniqueDates[0];
-  const activityPeriod = firstTx ? differenceInDays(Date.now(), firstTx) : 0;
+  const activityPeriod = firstTx ? Math.floor((todayUtc - firstTx) / ONE_DAY_MS) : 0;
 
   let swaps = 0;
   let bridges = 0;
