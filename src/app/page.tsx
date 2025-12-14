@@ -5,8 +5,8 @@ import sdk from '@farcaster/miniapp-sdk';
 import { fetchUserStats, getAddressFromBasename, type UserStats } from '@/lib/stats';
 import { Loader2, Search, BarChart3, Wallet, Activity, Heart, Share2 } from 'lucide-react';
 import clsx from 'clsx';
-// Added imports for wallet fallback and robust handling
-import { createWalletClient, custom, parseEther } from 'viem'; 
+// UPDATED IMPORTS: Added 'toHex' which is required for the fix
+import { createWalletClient, custom, parseEther, toHex } from 'viem'; 
 import { base } from 'viem/chains';
 
 export default function Home() {
@@ -38,7 +38,6 @@ export default function Home() {
       return;
     }
 
-    // --- BOOKMARK POPUP LOGIC ---
     if (!hasPromptedBookmark.current) {
       try {
         const context = await sdk.context;
@@ -50,7 +49,6 @@ export default function Home() {
       }
       hasPromptedBookmark.current = true;
     }
-    // ------------------------------------
 
     setLoading(true);
     setError('');
@@ -94,32 +92,14 @@ export default function Home() {
     }
   };
 
-  // UPDATED: Robust Donate for Base App & Farcaster
+  // UPDATED: Exact logic from Base Builder Score project
   const handleDonate = async () => {
     const RECIPIENT = "0xa6DEe9FdE9E1203ad02228f00bF10235d9Ca3752";
     const AMOUNT_ETH = "0.00169"; 
-    
-    // 1. Try Farcaster SDK First
-    let farcasterSuccess = false;
-    try {
-      const context = await sdk.context;
-      // Only use SDK if we are definitely inside a Farcaster Client
-      if (context?.client) {
-        await sdk.actions.sendToken({
-          token: "eip155:8453/native", 
-          recipientAddress: RECIPIENT,
-          amount: (BigInt(parseFloat(AMOUNT_ETH) * 10**18)).toString() // Convert to Wei String
-        });
-        farcasterSuccess = true;
-      }
-    } catch (e) {
-      console.warn("Farcaster SDK donate failed, attempting fallback...", e);
-    }
+    let success = false;
 
-    // Stop here if Farcaster action was successful
-    if (farcasterSuccess) return;
-
-    // 2. Fallback: Standard Wallet (Base App / Coinbase Wallet / Metamask)
+    // 1. Try Injected Wallet FIRST (Base App / MetaMask / Coinbase Wallet)
+    // This is the native way for Base App and fixes the "failed to send" error.
     if (typeof window !== 'undefined' && (window as any).ethereum) {
       try {
         const walletClient = createWalletClient({
@@ -129,7 +109,7 @@ export default function Home() {
 
         const [address] = await walletClient.requestAddresses();
         
-        // CRITICAL: Try to switch to Base chain first to prevent errors
+        // Try to switch to Base chain first
         try {
           await walletClient.switchChain({ id: base.id });
         } catch (switchError) {
@@ -143,13 +123,45 @@ export default function Home() {
           chain: base
         });
         
-      } catch (e) {
+        success = true;
+      } catch (e: any) {
         console.error("Wallet donation failed", e);
-        // User-friendly error
-        alert("Transaction failed. Please check your wallet connection.");
+        // If user explicitly rejected, stop here.
+        if (e.code === 4001 || e.message?.toLowerCase().includes("reject")) {
+            return;
+        }
       }
-    } else {
-      alert("No wallet found. Please open this in Coinbase Wallet or a web3 browser.");
+    }
+
+    // 2. Try Farcaster SDK (Fallback for Warpcast mobile)
+    if (!success) {
+      try {
+        const context = await sdk.context;
+        // Only attempt if we are in a Farcaster client
+        if (context?.client) {
+            const amountWei = parseEther(AMOUNT_ETH);
+            const amountHex = toHex(amountWei); // FIX: Use Hex string for SDK
+
+            await sdk.actions.sendToken({
+              token: "eip155:8453/native", 
+              recipientAddress: RECIPIENT,
+              amount: amountHex 
+            });
+            success = true;
+        }
+      } catch (e) {
+        console.warn("Farcaster SDK donate failed:", e);
+      }
+    }
+
+    // 3. Final Fallback: Copy Address
+    if (!success) {
+       try {
+         await navigator.clipboard.writeText(RECIPIENT);
+         alert("Donation address copied to clipboard! (No active wallet found)");
+       } catch (err) {
+         alert("Please send 0.00169 ETH to: " + RECIPIENT);
+       }
     }
   };
 
@@ -310,7 +322,7 @@ export default function Home() {
 function StatCard({ 
   value, 
   label, 
-  highlight = false, 
+  highlight = false,
   valueColor 
 }: { 
   value: number | string;
