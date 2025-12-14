@@ -1,12 +1,11 @@
 'use client';
 
-// Added useRef to track if we've already shown the popup
 import { useState, useEffect, useRef } from 'react';
 import sdk from '@farcaster/miniapp-sdk';
 import { fetchUserStats, getAddressFromBasename, type UserStats } from '@/lib/stats';
 import { Loader2, Search, BarChart3, Wallet, Activity, Heart, Share2 } from 'lucide-react';
 import clsx from 'clsx';
-// Added imports for wallet fallback
+// Added imports for wallet fallback and robust handling
 import { createWalletClient, custom, parseEther } from 'viem'; 
 import { base } from 'viem/chains';
 
@@ -16,7 +15,6 @@ export default function Home() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [error, setError] = useState('');
   
-  // Track if we have already tried to add the bookmark in this session
   const hasPromptedBookmark = useRef(false);
 
   useEffect(() => {
@@ -34,27 +32,22 @@ export default function Home() {
     e.preventDefault();
     if (!input) return;
 
-    // Client-side regex check: Reject strictly 42-char hex strings
     const isRawAddress = /^0x[a-fA-F0-9]{40}$/.test(input.trim());
-    
     if (isRawAddress) {
       setError('Please enter a valid Basename (e.g. jesse.base.eth), not a raw address.');
       return;
     }
 
     // --- BOOKMARK POPUP LOGIC ---
-    // Check if we haven't prompted yet
     if (!hasPromptedBookmark.current) {
       try {
         const context = await sdk.context;
-        // If context exists and the app is NOT added yet
         if (context?.client && !context.client.added) {
           await sdk.actions.addMiniApp();
         }
       } catch (e) {
         console.error("Bookmark check failed", e);
       }
-      // Mark as prompted so we don't annoy the user again this session
       hasPromptedBookmark.current = true;
     }
     // ------------------------------------
@@ -81,11 +74,9 @@ export default function Home() {
   const handleShare = async () => {
     if (!stats) return;
 
-    // Use current window location
     const host = window.location.origin;
     const timestamp = Date.now();
     
-    // Construct the Share URL
     const shareUrl = new URL(`${host}/share`);
     shareUrl.searchParams.set('name', input);
     shareUrl.searchParams.set('tx', stats.totalTransactions.toString());
@@ -103,27 +94,32 @@ export default function Home() {
     }
   };
 
-  // UPDATED: Works in both Farcaster and Browser/Wallet Apps
+  // UPDATED: Robust Donate for Base App & Farcaster
   const handleDonate = async () => {
     const RECIPIENT = "0xa6DEe9FdE9E1203ad02228f00bF10235d9Ca3752";
-    const AMOUNT_WEI = "1690000000000000"; // 0.00169 ETH
-
+    const AMOUNT_ETH = "0.00169"; 
+    
     // 1. Try Farcaster SDK First
+    let farcasterSuccess = false;
     try {
       const context = await sdk.context;
+      // Only use SDK if we are definitely inside a Farcaster Client
       if (context?.client) {
         await sdk.actions.sendToken({
-          token: "eip155:8453/native", // Base ETH
+          token: "eip155:8453/native", 
           recipientAddress: RECIPIENT,
-          amount: AMOUNT_WEI 
+          amount: (BigInt(parseFloat(AMOUNT_ETH) * 10**18)).toString() // Convert to Wei String
         });
-        return; // Exit if successful or initiated
+        farcasterSuccess = true;
       }
     } catch (e) {
-      console.warn("Farcaster donate failed, falling back to wallet:", e);
+      console.warn("Farcaster SDK donate failed, attempting fallback...", e);
     }
 
-    // 2. Fallback: Standard Wallet (Viem)
+    // Stop here if Farcaster action was successful
+    if (farcasterSuccess) return;
+
+    // 2. Fallback: Standard Wallet (Base App / Coinbase Wallet / Metamask)
     if (typeof window !== 'undefined' && (window as any).ethereum) {
       try {
         const walletClient = createWalletClient({
@@ -133,18 +129,27 @@ export default function Home() {
 
         const [address] = await walletClient.requestAddresses();
         
+        // CRITICAL: Try to switch to Base chain first to prevent errors
+        try {
+          await walletClient.switchChain({ id: base.id });
+        } catch (switchError) {
+          console.log("Chain switch handled by wallet or ignored", switchError);
+        }
+
         await walletClient.sendTransaction({
           account: address,
           to: RECIPIENT,
-          value: BigInt(AMOUNT_WEI),
+          value: parseEther(AMOUNT_ETH),
           chain: base
         });
+        
       } catch (e) {
         console.error("Wallet donation failed", e);
-        alert("Could not trigger donation. Please ensure your wallet is connected.");
+        // User-friendly error
+        alert("Transaction failed. Please check your wallet connection.");
       }
     } else {
-        alert("No wallet found. Please open in a crypto wallet browser.");
+      alert("No wallet found. Please open this in Coinbase Wallet or a web3 browser.");
     }
   };
 
@@ -305,7 +310,7 @@ export default function Home() {
 function StatCard({ 
   value, 
   label, 
-  highlight = false,
+  highlight = false, 
   valueColor 
 }: { 
   value: number | string;
