@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+// Added useRef to track if we've already shown the popup
+import { useState, useEffect, useRef } from 'react';
 import sdk from '@farcaster/miniapp-sdk';
 import { fetchUserStats, getAddressFromBasename, type UserStats } from '@/lib/stats';
 import { Loader2, Search, BarChart3, Wallet, Activity, Heart, Share2 } from 'lucide-react';
@@ -11,6 +12,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [error, setError] = useState('');
+  
+  // Track if we have already tried to add the bookmark in this session
+  const hasPromptedBookmark = useRef(false);
 
   useEffect(() => {
     const init = async () => {
@@ -34,6 +38,23 @@ export default function Home() {
       setError('Please enter a valid Basename (e.g. jesse.base.eth), not a raw address.');
       return;
     }
+
+    // --- BOOKMARK POPUP LOGIC (Added) ---
+    // Check if we haven't prompted yet
+    if (!hasPromptedBookmark.current) {
+      try {
+        const context = await sdk.context;
+        // If context exists and the app is NOT added yet
+        if (context?.client && !context.client.added) {
+          await sdk.actions.addMiniApp();
+        }
+      } catch (e) {
+        console.error("Bookmark check failed", e);
+      }
+      // Mark as prompted so we don't annoy the user again this session
+      hasPromptedBookmark.current = true;
+    }
+    // ------------------------------------
 
     setLoading(true);
     setError('');
@@ -71,7 +92,6 @@ export default function Home() {
 
     try {
       await sdk.actions.composeCast({
-        // UPDATED: New preset text
         text: `Just checked the Base activity stats for ${input}!`,
         embeds: [shareUrl.toString()]
       });
@@ -166,7 +186,6 @@ export default function Home() {
               className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow-md active:scale-95"
             >
               <Share2 className="w-5 h-5" />
-              {/* UPDATED: Button Text */}
               Share Stats
             </button>
 
