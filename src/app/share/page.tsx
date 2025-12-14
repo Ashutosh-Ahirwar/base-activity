@@ -12,18 +12,23 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const name = (sp.name as string) || 'User';
   const tx = (sp.tx as string) || '0';
   const gas = (sp.gas as string) || '0';
-  // CHANGE: Get 'contracts'
   const contracts = (sp.contracts as string) || '0';
   const t = (sp.t as string) || Date.now().toString();
 
-  const host = process.env.NEXT_PUBLIC_HOST 
+  // DYNAMIC HOST RESOLUTION
+  let host = process.env.NEXT_PUBLIC_HOST 
     ? process.env.NEXT_PUBLIC_HOST 
     : process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}` 
       : 'http://localhost:3000';
 
-  // CHANGE: Pass 'contracts' to API
+  // FIX: Force HTTPS. Farcaster rejects http:// embeds, making the frame invalid.
+  if (!host.startsWith('http')) {
+    host = `https://${host}`;
+  }
+
   const imageUrl = `${host}/api/og?name=${encodeURIComponent(name)}&tx=${encodeURIComponent(tx)}&gas=${encodeURIComponent(gas)}&contracts=${encodeURIComponent(contracts)}&t=${t}`;
+  const targetUrl = `${host}?basename=${encodeURIComponent(name)}`;
 
   return {
     title: `${name}'s Base Stats`,
@@ -44,9 +49,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       "fc:frame": "vNext",
       "fc:frame:image": imageUrl,
       "fc:frame:image:aspect_ratio": "1.91:1",
+      // "View Stats" opens the Mini App
       "fc:frame:button:1": "View Stats",
       "fc:frame:button:1:action": "link",
-      "fc:frame:button:1:target": `${host}?basename=${name}`, 
+      "fc:frame:button:1:target": targetUrl, 
     }
   };
 }

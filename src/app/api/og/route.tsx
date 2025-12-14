@@ -20,22 +20,9 @@ export async function GET(request: NextRequest) {
       displayName += '.base.eth';
     }
 
-    // PFP Logic
-    const pfpUrl = `https://avatar.vercel.sh/${rawName}`;
-    let pfpSrc = null;
-
-    try {
-      const res = await fetch(pfpUrl);
-      if (res.ok) {
-        const buffer = await res.arrayBuffer();
-        // @ts-ignore
-        const base64 = Buffer.from(buffer).toString('base64');
-        const contentType = res.headers.get('content-type') || 'image/png';
-        pfpSrc = `data:${contentType};base64,${base64}`;
-      }
-    } catch (e) {
-      console.warn("PFP fetch error:", e);
-    }
+    // PFP Logic: Use reliable URL directly with encoding
+    // Adding .png ensures Satori treats it as an image resource correctly
+    const pfpUrl = `https://avatar.vercel.sh/${encodeURIComponent(rawName)}.png`;
 
     return new ImageResponse(
       (
@@ -66,6 +53,19 @@ export async function GET(request: NextRequest) {
               display: 'flex',
             }}
           />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-50px',
+              left: '-50px',
+              width: '300px',
+              height: '300px',
+              background: 'rgba(0, 0, 0, 0.2)',
+              borderRadius: '50%',
+              filter: 'blur(60px)',
+              display: 'flex',
+            }}
+          />
           
           <div
             style={{
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: 'white', // RESTORED: White Card Background
+              backgroundColor: 'white', // White Card Background
               borderRadius: 24,
               padding: '40px 60px',
               boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
@@ -97,11 +97,14 @@ export async function GET(request: NextRequest) {
                 fontWeight: 'bold',
                 overflow: 'hidden'
               }}>
-                {pfpSrc ? (
-                    <img src={pfpSrc} width="60" height="60" style={{ objectFit: 'cover' }} />
-                ) : (
-                    displayName[0].toUpperCase()
-                )}
+                {/* DIRECT IMG TAG - Fixes timeout/buffer issues */}
+                <img 
+                  src={pfpUrl} 
+                  width="60" 
+                  height="60" 
+                  style={{ objectFit: 'cover' }} 
+                  alt={displayName}
+                />
               </div>
               <span style={{ fontSize: 48, fontWeight: 900, color: '#111' }}>
                 {displayName}
@@ -147,6 +150,7 @@ export async function GET(request: NextRequest) {
       },
     );
   } catch (e: any) {
+    console.error("OG Generation Error:", e);
     return new Response(`Failed to generate the image`, {
       status: 500,
     });
