@@ -31,7 +31,7 @@ export const metadata: Metadata = {
       {
         url: `${APP_URL}/hero.png`,
         width: 1200,
-        height: 800,
+        height: 630,
         alt: 'Base Activity Stats Preview',
       },
     ],
