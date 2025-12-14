@@ -11,6 +11,8 @@ export async function GET(request: Request) {
     const tx = searchParams.get('tx') || '0';
     const gas = searchParams.get('gas') || '0';
     const streak = searchParams.get('streak') || '0';
+    // We read 't' to ensure the URL is unique, even if we don't render it
+    const _t = searchParams.get('t'); 
 
     return new ImageResponse(
       (
@@ -96,7 +98,7 @@ export async function GET(request: Request) {
       ),
       {
         width: 1200,
-        height: 630, // FIXED: Changed from 800 to 630 (Standard 1.91:1)
+        height: 630, // Standard 1.91:1 Ratio
       },
     );
   } catch (e: any) {

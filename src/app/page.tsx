@@ -59,6 +59,7 @@ export default function Home() {
 
     // Use current window location
     const host = window.location.origin;
+    const timestamp = Date.now(); // Generate timestamp for cache busting
     
     // Construct the Share URL with query params
     // This points to our /share page
@@ -67,6 +68,7 @@ export default function Home() {
     shareUrl.searchParams.set('tx', stats.totalTransactions.toString());
     shareUrl.searchParams.set('gas', stats.totalGasPaid);
     shareUrl.searchParams.set('streak', stats.longestStreak.toString());
+    shareUrl.searchParams.set('t', timestamp.toString()); // Pass 't' param to force fresh image
 
     try {
       await sdk.actions.composeCast({

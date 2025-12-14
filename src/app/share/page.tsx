@@ -11,16 +11,18 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const tx = (sp.tx as string) || '0';
   const gas = (sp.gas as string) || '0';
   const streak = (sp.streak as string) || '0';
+  // Capture timestamp or default to now
+  const t = (sp.t as string) || Date.now().toString();
 
-  // DYNAMIC HOST RESOLUTION
+  // Dynamic Host Resolution
   const host = process.env.NEXT_PUBLIC_HOST 
     ? process.env.NEXT_PUBLIC_HOST 
     : process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}` 
       : 'http://localhost:3000';
 
-  // ENCODING PARAMETERS
-  const imageUrl = `${host}/api/og?name=${encodeURIComponent(name)}&tx=${encodeURIComponent(tx)}&gas=${encodeURIComponent(gas)}&streak=${encodeURIComponent(streak)}`;
+  // Construct Image URL with timestamp (t) for cache busting
+  const imageUrl = `${host}/api/og?name=${encodeURIComponent(name)}&tx=${encodeURIComponent(tx)}&gas=${encodeURIComponent(gas)}&streak=${encodeURIComponent(streak)}&t=${t}`;
 
   return {
     title: `${name}'s Base Stats`,
@@ -32,7 +34,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
         {
           url: imageUrl,
           width: 1200,
-          height: 630, // FIXED: Changed from 800 to 630
+          height: 630,
           alt: `${name}'s Base Stats`,
         }
       ],
@@ -40,7 +42,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     other: {
       "fc:frame": "vNext",
       "fc:frame:image": imageUrl,
-      "fc:frame:image:aspect_ratio": "1.91:1", // EXPLICITLY SET ASPECT RATIO
+      "fc:frame:image:aspect_ratio": "1.91:1",
       "fc:frame:button:1": "View Stats",
       "fc:frame:button:1:action": "link",
       "fc:frame:button:1:target": `${host}?basename=${name}`, 
