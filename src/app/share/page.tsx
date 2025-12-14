@@ -16,19 +16,18 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const t = (sp.t as string) || Date.now().toString();
 
   // DYNAMIC HOST RESOLUTION
-  // 1. Get the raw host from env vars
   let rawHost = process.env.NEXT_PUBLIC_HOST 
     ? process.env.NEXT_PUBLIC_HOST 
     : process.env.VERCEL_URL 
       ? process.env.VERCEL_URL 
       : 'http://localhost:3000';
 
-  // 2. Ensure it has a protocol (Force HTTPS for non-localhost)
   let host = rawHost.toString();
+  
+  // FIX: Force HTTPS and remove trailing slash
   if (!host.startsWith('http')) {
     host = `https://${host}`;
   }
-  // 3. Remove trailing slash if present to avoid double slashes
   host = host.replace(/\/$/, '');
 
   const imageUrl = `${host}/api/og?name=${encodeURIComponent(name)}&tx=${encodeURIComponent(tx)}&gas=${encodeURIComponent(gas)}&contracts=${encodeURIComponent(contracts)}&t=${t}`;
@@ -53,7 +52,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       "fc:frame": "vNext",
       "fc:frame:image": imageUrl,
       "fc:frame:image:aspect_ratio": "1.91:1",
-      // Button to open the app
+      // Button to open the Mini App
       "fc:frame:button:1": "Open Mini App",
       "fc:frame:button:1:action": "link",
       "fc:frame:button:1:target": targetUrl, 

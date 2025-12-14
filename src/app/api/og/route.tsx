@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
             fontFamily: 'sans-serif',
           }}
         >
-          {/* Background Circles (Subtle Texture) */}
+          {/* Background Circles */}
           <div
             style={{
               position: 'absolute',
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: 'white', // White Card Background
+              backgroundColor: 'white',
               borderRadius: 24,
               padding: '40px 60px',
               boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
                 fontWeight: 'bold',
                 overflow: 'hidden'
               }}>
-                {/* CHANGED: Removed Image, Display First Letter Only */}
+                {/* CHANGED: Display First Letter Only (No Image) */}
                 {displayName[0].toUpperCase()}
               </div>
               <span style={{ fontSize: 48, fontWeight: 900, color: '#111' }}>
