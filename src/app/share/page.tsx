@@ -12,17 +12,15 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const gas = (sp.gas as string) || '0';
   const streak = (sp.streak as string) || '0';
 
-  // 1. DYNAMIC HOST RESOLUTION
-  // This prioritizes a manual env var, falls back to Vercel's automatic URL, 
-  // and finally defaults to localhost for local development.
+  // Construct the absolute URL to your image generator
+  // This logic automatically handles Vercel Preview & Production URLs
   const host = process.env.NEXT_PUBLIC_HOST 
     ? process.env.NEXT_PUBLIC_HOST 
     : process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}` 
       : 'http://localhost:3000';
 
-  // 2. ENCODING PARAMETERS
-  // Important to encode values (like names with spaces or emojis) to prevent URL breakage
+  // IMPORTANT: Encode parameters to prevent broken URLs with special characters
   const imageUrl = `${host}/api/og?name=${encodeURIComponent(name)}&tx=${encodeURIComponent(tx)}&gas=${encodeURIComponent(gas)}&streak=${encodeURIComponent(streak)}`;
 
   return {
@@ -35,7 +33,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
         {
           url: imageUrl,
           width: 1200,
-          height: 630,
+          height: 800, // UPDATED HEIGHT
           alt: `${name}'s Base Stats`,
         }
       ],

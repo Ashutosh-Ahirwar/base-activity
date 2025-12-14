@@ -11,7 +11,6 @@ export async function GET(request: Request) {
     const tx = searchParams.get('tx') || '0';
     const gas = searchParams.get('gas') || '0';
     const streak = searchParams.get('streak') || '0';
-    const active = searchParams.get('active') || '0';
 
     return new ImageResponse(
       (
@@ -97,7 +96,7 @@ export async function GET(request: Request) {
       ),
       {
         width: 1200,
-        height: 630,
+        height: 800, // UPDATED HEIGHT
       },
     );
   } catch (e: any) {
