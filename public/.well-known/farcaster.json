@@ -1,0 +1,40 @@
+{
+  "frame": {
+    "name": "Base Activity",
+    "version": "1",
+    "iconUrl": "https://base-activity.vercel.app/icon.png",
+    "imageUrl": "https://base-activity.vercel.app/hero.png",
+    "homeUrl": "https://base-activity.vercel.app",
+    "buttonTitle": "Check Activity",
+    "splashImageUrl": "https://base-activity.vercel.app/splash.png",
+    "splashBackgroundColor": "#0052FF",
+    "webhookUrl": "https://base-activity.vercel.app/api/webhook",
+    "subtitle": "Track your onchain stats",
+    "description": "Analyze your Base & Ethereum activity. Track daily streaks, total gas fees paid, transaction history, and contract interactions.",
+    "screenshotUrls": [
+      "https://base-activity.vercel.app/screenshot1.png"
+    ],
+    "primaryCategory": "productivity",
+    "tags": [
+      "base",
+      "activity",
+      "stats",
+      "analytics",
+      "onchain"
+    ],
+    "heroImageUrl": "https://base-activity.vercel.app/hero.png",
+    "tagline": "Discover your Onchain Footprint",
+    "ogTitle": "Base Activity Stats",
+    "ogDescription": "Check your onchain reputation, gas fees, and streaks on Base.",
+    "ogImageUrl": "https://base-activity.vercel.app/hero.png",
+    "noindex": false
+  },
+  "baseBuilder": {
+    "ownerAddress": "0xd505989c1d95dEfcaE778475D494F5f51776Fe46"
+  },
+  "accountAssociation": {
+    "header": "eyJmaWQiOjEzNzEyODgsInR5cGUiOiJhdXRoIiwia2V5IjoiMHg4NGM0N0JDNDBhNDY4MGI5QjFjM2I2YUY3ZkZjYjg4ODhkYzBEMzU3In0",
+    "payload": "eyJkb21haW4iOiJiYXNlLWFjdGl2aXR5LnZlcmNlbC5hcHAifQ==",
+    "signature": "MH..."
+  }
+}
