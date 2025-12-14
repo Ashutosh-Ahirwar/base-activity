@@ -10,7 +10,7 @@
     "splashBackgroundColor": "#0052FF",
     "webhookUrl": "https://base-activity.vercel.app/api/webhook",
     "subtitle": "Track your onchain stats",
-    "description": "Analyze your Base & Ethereum activity. Track daily streaks, total gas fees paid, transaction history, and contract interactions.",
+    "description": "Analyze your Base and Ethereum activity. Track daily streaks, total gas fees paid, transaction history, and contract interactions.",
     "screenshotUrls": [
       "https://base-activity.vercel.app/screenshot1.png"
     ],
@@ -23,7 +23,7 @@
       "onchain"
     ],
     "heroImageUrl": "https://base-activity.vercel.app/hero.png",
-    "tagline": "Discover your Onchain Footprint",
+    "tagline": "Your Onchain Footprint",
     "ogTitle": "Base Activity Stats",
     "ogDescription": "Check your onchain reputation, gas fees, and streaks on Base.",
     "ogImageUrl": "https://base-activity.vercel.app/hero.png",
