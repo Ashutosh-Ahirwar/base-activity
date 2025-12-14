@@ -12,15 +12,14 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const gas = (sp.gas as string) || '0';
   const streak = (sp.streak as string) || '0';
 
-  // Construct the absolute URL to your image generator
-  // This logic automatically handles Vercel Preview & Production URLs
+  // DYNAMIC HOST RESOLUTION
   const host = process.env.NEXT_PUBLIC_HOST 
     ? process.env.NEXT_PUBLIC_HOST 
     : process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}` 
       : 'http://localhost:3000';
 
-  // IMPORTANT: Encode parameters to prevent broken URLs with special characters
+  // ENCODING PARAMETERS
   const imageUrl = `${host}/api/og?name=${encodeURIComponent(name)}&tx=${encodeURIComponent(tx)}&gas=${encodeURIComponent(gas)}&streak=${encodeURIComponent(streak)}`;
 
   return {
@@ -33,7 +32,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
         {
           url: imageUrl,
           width: 1200,
-          height: 800, // UPDATED HEIGHT
+          height: 630, // FIXED: Changed from 800 to 630
           alt: `${name}'s Base Stats`,
         }
       ],
@@ -41,6 +40,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     other: {
       "fc:frame": "vNext",
       "fc:frame:image": imageUrl,
+      "fc:frame:image:aspect_ratio": "1.91:1", // EXPLICITLY SET ASPECT RATIO
       "fc:frame:button:1": "View Stats",
       "fc:frame:button:1:action": "link",
       "fc:frame:button:1:target": `${host}?basename=${name}`, 

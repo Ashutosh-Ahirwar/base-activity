@@ -96,7 +96,7 @@ export async function GET(request: Request) {
       ),
       {
         width: 1200,
-        height: 800, // UPDATED HEIGHT
+        height: 630, // FIXED: Changed from 800 to 630 (Standard 1.91:1)
       },
     );
   } catch (e: any) {
