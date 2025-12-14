@@ -33,8 +33,8 @@
     "ownerAddress": "0xd505989c1d95dEfcaE778475D494F5f51776Fe46"
   },
   "accountAssociation": {
-    "header": "eyJmaWQiOjEzNzEyODgsInR5cGUiOiJhdXRoIiwia2V5IjoiMHg4NGM0N0JDNDBhNDY4MGI5QjFjM2I2YUY3ZkZjYjg4ODhkYzBEMzU3In0",
-    "payload": "eyJkb21haW4iOiJiYXNlLWFjdGl2aXR5LnZlcmNlbC5hcHAifQ==",
-    "signature": "MH..."
+    "header": "eyJmaWQiOjEzNzEyODgsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgxZTMyMDg2MTE0MDRiMTlGOGE3NUM4NzRERUFiQjBhMjYzMThGRkNFIn0",
+    "payload": "eyJkb21haW4iOiJiYXNlLWFjdGl2aXR5LnZlcmNlbC5hcHAifQ",
+    "signature": "AkQVTcS7+ieHgdVI+Cf8F2NcP7Ibh1kcvq/LlI5ZzoECeW6k3uJ4Y+7iI1hC27U6+iVxVTIXZ9+3f/6MGM3/TBs="
   }
 }
