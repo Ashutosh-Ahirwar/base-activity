@@ -6,6 +6,9 @@ import sdk from '@farcaster/miniapp-sdk';
 import { fetchUserStats, getAddressFromBasename, type UserStats } from '@/lib/stats';
 import { Loader2, Search, BarChart3, Wallet, Activity, Heart, Share2 } from 'lucide-react';
 import clsx from 'clsx';
+// Added imports for wallet fallback
+import { createWalletClient, custom, parseEther } from 'viem'; 
+import { base } from 'viem/chains';
 
 export default function Home() {
   const [input, setInput] = useState('');
@@ -39,7 +42,7 @@ export default function Home() {
       return;
     }
 
-    // --- BOOKMARK POPUP LOGIC (Added) ---
+    // --- BOOKMARK POPUP LOGIC ---
     // Check if we haven't prompted yet
     if (!hasPromptedBookmark.current) {
       try {
@@ -100,16 +103,48 @@ export default function Home() {
     }
   };
 
+  // UPDATED: Works in both Farcaster and Browser/Wallet Apps
   const handleDonate = async () => {
+    const RECIPIENT = "0xa6DEe9FdE9E1203ad02228f00bF10235d9Ca3752";
+    const AMOUNT_WEI = "1690000000000000"; // 0.00169 ETH
+
+    // 1. Try Farcaster SDK First
     try {
-      await sdk.actions.sendToken({
-        token: "eip155:8453/native", // Base ETH
-        recipientAddress: "0xa6DEe9FdE9E1203ad02228f00bF10235d9Ca3752",
-        // 0.00169 ETH in wei
-        amount: "1690000000000000" 
-      });
+      const context = await sdk.context;
+      if (context?.client) {
+        await sdk.actions.sendToken({
+          token: "eip155:8453/native", // Base ETH
+          recipientAddress: RECIPIENT,
+          amount: AMOUNT_WEI 
+        });
+        return; // Exit if successful or initiated
+      }
     } catch (e) {
-      console.error("Donation cancelled or failed", e);
+      console.warn("Farcaster donate failed, falling back to wallet:", e);
+    }
+
+    // 2. Fallback: Standard Wallet (Viem)
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      try {
+        const walletClient = createWalletClient({
+          chain: base,
+          transport: custom((window as any).ethereum)
+        });
+
+        const [address] = await walletClient.requestAddresses();
+        
+        await walletClient.sendTransaction({
+          account: address,
+          to: RECIPIENT,
+          value: BigInt(AMOUNT_WEI),
+          chain: base
+        });
+      } catch (e) {
+        console.error("Wallet donation failed", e);
+        alert("Could not trigger donation. Please ensure your wallet is connected.");
+      }
+    } else {
+        alert("No wallet found. Please open in a crypto wallet browser.");
     }
   };
 
