@@ -38,17 +38,26 @@ export default function Home() {
       return;
     }
 
+    // --- BOOKMARK POPUP LOGIC (UPDATED) ---
+    // Only attempt if we haven't tried in this session yet
     if (!hasPromptedBookmark.current) {
-      try {
-        const context = await sdk.context;
-        if (context?.client && !context.client.added) {
-          await sdk.actions.addMiniApp();
-        }
-      } catch (e) {
-        console.error("Bookmark check failed", e);
-      }
+      // Mark as prompted IMMEDIATELY so it never runs again this session
       hasPromptedBookmark.current = true;
+
+      // Fire and forget the bookmark check so it doesn't block the search
+      (async () => {
+        try {
+          const context = await sdk.context;
+          if (context?.client && !context.client.added) {
+            await sdk.actions.addMiniApp();
+          }
+        } catch (e) {
+          // Ignore errors (like "not supported in Base App") silently
+          console.warn("Bookmark check failed or cancelled", e);
+        }
+      })();
     }
+    // --------------------------------------
 
     setLoading(true);
     setError('');
