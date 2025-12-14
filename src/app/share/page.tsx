@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 
-// FORCE DYNAMIC to prevent 400 errors
 export const dynamic = 'force-dynamic';
 
 type Props = {
@@ -13,18 +12,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const name = (sp.name as string) || 'User';
   const tx = (sp.tx as string) || '0';
   const gas = (sp.gas as string) || '0';
-  // Read 'contracts' instead of 'streak'
+  // CHANGE: Get 'contracts'
   const contracts = (sp.contracts as string) || '0';
   const t = (sp.t as string) || Date.now().toString();
 
-  // Dynamic Host
   const host = process.env.NEXT_PUBLIC_HOST 
     ? process.env.NEXT_PUBLIC_HOST 
     : process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}` 
       : 'http://localhost:3000';
 
-  // Construct Image URL with 'contracts' param
+  // CHANGE: Pass 'contracts' to API
   const imageUrl = `${host}/api/og?name=${encodeURIComponent(name)}&tx=${encodeURIComponent(tx)}&gas=${encodeURIComponent(gas)}&contracts=${encodeURIComponent(contracts)}&t=${t}`;
 
   return {

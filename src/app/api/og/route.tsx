@@ -11,14 +11,12 @@ export async function GET(request: NextRequest) {
     const rawName = searchParams.get('name') || 'User';
     const tx = searchParams.get('tx') || '0';
     const gas = searchParams.get('gas') || '0';
-    const contracts = searchParams.get('contracts') || '0'; // Changed from 'streak'
-    
-    // We read 't' to ensure the URL is unique (cache busting)
+    const contracts = searchParams.get('contracts') || '0'; 
     const _t = searchParams.get('t'); 
 
-    // Basename Logic: Ensure it ends with .base.eth
+    // Basename Logic
     let displayName = rawName.trim();
-    if (!displayName.toLowerCase().endsWith('.base.eth')) {
+    if (!displayName.toLowerCase().endsWith('.base.eth') && !displayName.startsWith('0x')) {
       displayName += '.base.eth';
     }
 
@@ -49,13 +47,12 @@ export async function GET(request: NextRequest) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#0052FF',
+            backgroundColor: '#0052FF', // Base Blue
             backgroundImage: 'linear-gradient(to bottom right, #0052FF, #0033CC)',
             fontFamily: 'sans-serif',
-            position: 'relative',
           }}
         >
-          {/* Background Circles */}
+          {/* Background Circles (Subtle Texture) */}
           <div
             style={{
               position: 'absolute',
@@ -69,93 +66,77 @@ export async function GET(request: NextRequest) {
               display: 'flex',
             }}
           />
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '-50px',
-              left: '-50px',
-              width: '300px',
-              height: '300px',
-              background: 'rgba(0, 0, 0, 0.2)',
-              borderRadius: '50%',
-              filter: 'blur(60px)',
-              display: 'flex',
-            }}
-          />
-
+          
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
+              backgroundColor: 'white', // RESTORED: White Card Background
+              borderRadius: 24,
+              padding: '40px 60px',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+              width: '85%',
               zIndex: 10,
-              width: '90%',
             }}
           >
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
-               {/* Title */}
-               <div style={{ fontSize: 32, textTransform: 'uppercase', letterSpacing: '4px', color: '#bfdbfe' }}>
-                  Base Activity Stats
-               </div>
+              <div style={{ 
+                width: 60, 
+                height: 60, 
+                borderRadius: 30, 
+                backgroundColor: '#0052FF',
+                marginRight: 20,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: 32,
+                fontWeight: 'bold',
+                overflow: 'hidden'
+              }}>
+                {pfpSrc ? (
+                    <img src={pfpSrc} width="60" height="60" style={{ objectFit: 'cover' }} />
+                ) : (
+                    displayName[0].toUpperCase()
+                )}
+              </div>
+              <span style={{ fontSize: 48, fontWeight: 900, color: '#111' }}>
+                {displayName}
+              </span>
             </div>
 
-            {/* Stats Card */}
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'row', 
-              alignItems: 'center', 
-              justifyContent: 'space-around',
-              background: 'rgba(255, 255, 255, 0.1)', 
-              border: '2px solid rgba(255,255,255,0.2)',
-              borderRadius: '40px',
-              padding: '30px 40px',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
-              width: '100%',
-              gap: '20px'
-            }}>
+            {/* Stats Row */}
+            <div style={{ display: 'flex', gap: 40, marginTop: 20 }}>
+              
               {/* Stat 1: Transactions */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '30%' }}>
-                <span style={{ fontSize: 56, fontWeight: 900, color: 'white' }}>{tx}</span>
-                <span style={{ fontSize: 20, color: '#bfdbfe', marginTop: 5, textAlign: 'center' }}>Transactions</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: 64, fontWeight: 900, color: '#0052FF' }}>{tx}</span>
+                <span style={{ fontSize: 24, color: '#666' }}>Transactions</span>
               </div>
               
-              <div style={{ width: 2, height: 70, background: 'rgba(255,255,255,0.2)' }} />
+              <div style={{ width: 2, height: 80, backgroundColor: '#eee' }} />
 
               {/* Stat 2: Gas Paid */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '30%' }}>
-                <span style={{ fontSize: 56, fontWeight: 900, color: 'white' }}>{gas}</span>
-                <span style={{ fontSize: 20, color: '#bfdbfe', marginTop: 5, textAlign: 'center' }}>Gas Paid</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: 64, fontWeight: 900, color: '#0052FF' }}>{gas}</span>
+                <span style={{ fontSize: 24, color: '#666' }}>Gas Paid</span>
               </div>
 
-              <div style={{ width: 2, height: 70, background: 'rgba(255,255,255,0.2)' }} />
+              <div style={{ width: 2, height: 80, backgroundColor: '#eee' }} />
 
               {/* Stat 3: Contracts Deployed */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '30%' }}>
-                <span style={{ fontSize: 56, fontWeight: 900, color: 'white' }}>{contracts}</span>
-                <span style={{ fontSize: 20, color: '#bfdbfe', marginTop: 5, textAlign: 'center' }}>Contracts Deployed</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: 64, fontWeight: 900, color: '#0052FF' }}>{contracts}</span>
+                <span style={{ fontSize: 24, color: '#666' }}>Contracts Deployed</span>
               </div>
             </div>
 
-            {/* "And More" Indicator */}
-            <div style={{ marginTop: 15, color: '#bfdbfe', fontSize: 18, fontStyle: 'italic', opacity: 0.8 }}>
+            {/* Footer Text */}
+            <div style={{ marginTop: 30, fontSize: 20, color: '#999', fontStyle: 'italic' }}>
               + swaps, bridges, and much more...
-            </div>
-
-            {/* Footer Profile */}
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: 30 }}>
-              {pfpSrc && (
-                <img 
-                  src={pfpSrc}
-                  width="50" 
-                  height="50" 
-                  style={{ borderRadius: '50%', border: '3px solid rgba(255,255,255,0.3)', marginRight: 15, objectFit: 'cover' }} 
-                />
-              )}
-              <div style={{ display: 'flex', fontSize: 36, fontWeight: 'bold', color: 'white' }}>
-                {displayName}
-              </div>
             </div>
           </div>
         </div>
