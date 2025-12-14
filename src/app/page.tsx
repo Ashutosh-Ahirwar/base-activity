@@ -59,21 +59,20 @@ export default function Home() {
 
     // Use current window location
     const host = window.location.origin;
-    const timestamp = Date.now(); // Generate timestamp for cache busting
+    const timestamp = Date.now();
     
-    // Construct the Share URL with query params
-    // This points to our /share page
+    // Construct the Share URL
     const shareUrl = new URL(`${host}/share`);
     shareUrl.searchParams.set('name', input);
     shareUrl.searchParams.set('tx', stats.totalTransactions.toString());
     shareUrl.searchParams.set('gas', stats.totalGasPaid);
-    // Send 'contracts' param instead of 'streak'
     shareUrl.searchParams.set('contracts', stats.contractsDeployed.toString());
-    shareUrl.searchParams.set('t', timestamp.toString()); // Pass 't' param to force fresh image
+    shareUrl.searchParams.set('t', timestamp.toString()); 
 
     try {
       await sdk.actions.composeCast({
-        text: `Check out my Base activity stats for ${input}! 🔵`,
+        // UPDATED: New preset text
+        text: `Just checked the Base activity stats for ${input}!`,
         embeds: [shareUrl.toString()]
       });
     } catch (e) {
@@ -167,7 +166,8 @@ export default function Home() {
               className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow-md active:scale-95"
             >
               <Share2 className="w-5 h-5" />
-              Share Stats as Frame
+              {/* UPDATED: Button Text */}
+              Share Stats
             </button>
 
             <div className="grid grid-cols-2 gap-4">
