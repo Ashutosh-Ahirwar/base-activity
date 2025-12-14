@@ -1,5 +1,9 @@
 import { Metadata } from 'next';
 
+// FORCE DYNAMIC: Ensures this page is never statically generated,
+// solving issues with searchParams and 400 errors on varying inputs.
+export const dynamic = 'force-dynamic';
+
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
@@ -11,10 +15,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const tx = (sp.tx as string) || '0';
   const gas = (sp.gas as string) || '0';
   const streak = (sp.streak as string) || '0';
-  // Capture timestamp or default to now
-  const t = (sp.t as string) || Date.now().toString();
+  const t = (sp.t as string) || Date.now().toString(); // Timestamp for cache busting
 
-  // Dynamic Host Resolution
+  // DYNAMIC HOST RESOLUTION
+  // Prioritize env vars, then Vercel, then localhost
   const host = process.env.NEXT_PUBLIC_HOST 
     ? process.env.NEXT_PUBLIC_HOST 
     : process.env.VERCEL_URL 
@@ -52,8 +56,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
 export default function SharePage() {
   return (
-    <div className="flex items-center justify-center h-screen bg-white text-gray-500">
-      <p>Redirecting to stats...</p>
+    <div className="flex items-center justify-center h-screen bg-white text-gray-500 font-sans">
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl font-bold text-gray-900">Base Activity Stats</h1>
+        <p>Redirecting to full stats...</p>
+      </div>
     </div>
   );
 }
