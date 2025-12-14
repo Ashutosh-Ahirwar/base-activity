@@ -20,10 +20,6 @@ export async function GET(request: NextRequest) {
       displayName += '.base.eth';
     }
 
-    // PFP Logic: Use reliable URL directly with encoding
-    // Adding .png ensures Satori treats it as an image resource correctly
-    const pfpUrl = `https://avatar.vercel.sh/${encodeURIComponent(rawName)}.png`;
-
     return new ImageResponse(
       (
         <div
@@ -97,14 +93,8 @@ export async function GET(request: NextRequest) {
                 fontWeight: 'bold',
                 overflow: 'hidden'
               }}>
-                {/* DIRECT IMG TAG - Fixes timeout/buffer issues */}
-                <img 
-                  src={pfpUrl} 
-                  width="60" 
-                  height="60" 
-                  style={{ objectFit: 'cover' }} 
-                  alt={displayName}
-                />
+                {/* CHANGED: Removed Image, Display First Letter Only */}
+                {displayName[0].toUpperCase()}
               </div>
               <span style={{ fontSize: 48, fontWeight: 900, color: '#111' }}>
                 {displayName}
