@@ -93,7 +93,7 @@ export default function Home() {
 
     try {
       await sdk.actions.composeCast({
-        text: `Just checked the Base activity stats for ${input}!`,
+        text: `Just checked ${input}'s onchain activity on Base!`,
         embeds: [shareUrl.toString()]
       });
     } catch (e) {
